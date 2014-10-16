@@ -17,7 +17,7 @@ import (
 
 /*
 var url = "http://ieqi.net/wp-content/themes/ieqi-wptheme/css/main.css"
-var destDir = "F:\\kuaipan\\Projects\\webcopyer\\template"
+var destDir = "F:/kuaipan/Projects/webcopyer/template"
 
 var img_ext = []string{".jpg", ".gif", ".png", ".jpeg", ".JPG", ".GIF", ".PNG", ".JPEG", ".ico", ".ICO"}
 var css_ext = []string{".css", ".less", ".CSS", ".LESS"}
@@ -72,7 +72,7 @@ func init() {
 		fmt.Println("    webcopyer get http://lyric.im/")
 		fmt.Println()
 		fmt.Println("拷贝本地模板：")
-		fmt.Println("    webcopyer getLocal F:\\template\\index.html  http://drizzlep.diandian.com/")
+		fmt.Println("    webcopyer getLocal F:/template/index.html  http://drizzlep.diandian.com/")
 		fmt.Println()
 		fmt.Println("拷贝html及其直接关联资源模板：")
 		fmt.Println("    webcopyer getHtml http://lyric.im/")
@@ -134,7 +134,7 @@ func main() {
 	// fmt.Println(get_destdir_and_filetype("http://www.chinaz.com/"))
 
 	//getAll("http://drizzlep.diandian.com/", "")        //获取在线模版
-	//getAll("F:\\kuaipan\\Projects\\webcopyer\\template\\index.html", "http://drizzlep.diandian.com/page/2/") //获取本地模版
+	//getAll("F:/kuaipan/Projects/webcopyer/template\\index.html", "http://drizzlep.diandian.com/page/2/") //获取本地模版
 
 	//完整测试
 	// getHtml("http://www.chinaz.com/")
@@ -405,7 +405,7 @@ func get_destdir_and_filetype(url string) (string, string) {
 		return "unexcept", "unexcept"
 	}
 
-	dir = dir + "\\theme\\" + filetype + "\\"
+	dir = dir + "/theme/" + filetype + "/"
 	return dir, filetype
 }
 
@@ -423,19 +423,26 @@ func down_resource(url string, destDir string) {
 		resp, err := http.Get(fixed_url)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(0)
+			//os.Exit(0)
 		}
 
 		out, create_err := os.Create(fullfilename)
 		if create_err != nil {
 			fmt.Println(create_err)
-			os.Exit(0)
+			//os.Exit(0)
 		}
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println(err)
+			}
+		}()
 		_, copy_err := io.Copy(out, resp.Body)
 		if copy_err != nil {
 			fmt.Println(copy_err)
-			os.Exit(0)
+			//panic(copy_err)
+			//os.Exit(0)
 		}
+
 		out.Close()
 		resp.Body.Close()
 	}
@@ -548,7 +555,7 @@ func checkAndMkDir(destDir string) string {
 		}
 	}
 
-	destDir = destDir + "\\" + strconv.Itoa(int(time.Now().Unix()))
+	destDir = destDir + "/" + strconv.Itoa(int(time.Now().Unix()))
 	if !exist(destDir) {
 		err := os.Mkdir(destDir, os.ModePerm)
 		if err != nil {
@@ -556,22 +563,22 @@ func checkAndMkDir(destDir string) string {
 		}
 	}
 
-	if !exist(destDir + "\\theme\\js") {
-		err := os.MkdirAll(destDir+"\\theme\\js", os.ModePerm)
+	if !exist(destDir + "/theme/js") {
+		err := os.MkdirAll(destDir+"/theme/js", os.ModePerm)
 		if err != nil {
 			log.Fatal("无法创建目录！")
 		}
 	}
 
-	if !exist(destDir + "\\theme\\images") {
-		err := os.MkdirAll(destDir+"\\theme\\images", os.ModePerm)
+	if !exist(destDir + "/theme/images") {
+		err := os.MkdirAll(destDir+"/theme/images", os.ModePerm)
 		if err != nil {
 			log.Fatal("无法创建目录！")
 		}
 	}
 
-	if !exist(destDir + "\\theme\\css") {
-		err := os.MkdirAll(destDir+"\\theme\\css", os.ModePerm)
+	if !exist(destDir + "/theme/css") {
+		err := os.MkdirAll(destDir+"/theme/css", os.ModePerm)
 		if err != nil {
 			log.Fatal("无法创建目录！")
 		}
@@ -602,16 +609,16 @@ func fixResPath(path string) string {
 
 	fixed := path
 
-	if path == "" || path == "\\" {
-		fixed = "\\"
+	if path == "" || path == "/" {
+		fixed = "/"
 	} else {
-		if !strings.HasSuffix(path, "\\") {
-			fixed = fixed + "\\"
+		if !strings.HasSuffix(path, "/") {
+			fixed = fixed + "/"
 		}
 	}
 
-	if !strings.HasPrefix(path, "\\") {
-		fixed = "\\" + path
+	if !strings.HasPrefix(path, "/") {
+		fixed = "/" + path
 	}
 
 	return fixed
@@ -619,7 +626,7 @@ func fixResPath(path string) string {
 
 func getRelPath(base string, target string) string {
 	rel, _ := filepath.Rel(base, target)
-	rel = strings.Replace(rel, "/\\", "/", -1)
-	rel = strings.Replace(rel, "\\", "/", -1)
+	rel = strings.Replace(rel, "//", "/", -1)
+	rel = strings.Replace(rel, "/", "/", -1)
 	return rel
 }
